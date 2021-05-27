@@ -1,115 +1,51 @@
-# swrlit
+# swrlit-monetize
 
-swirl the web in your cup
+swirl some coin in your cup
 
 ## what's this?
 
-`swrlit` combines the power of [`useSWR`](https://swr.vercel.app/)
-with magic of Inrupt's [~~`lit-pod`~~`solid-client`](https://github.com/inrupt/solid-client-js) to create
-the swirliest [Solid](https://solidproject.org) data access library
-out there
+`swrlit-monetize` combines the power of [`useSWR`](https://swr.vercel.app/)
+with magic of Inrupt's [~~`lit-pod`~~`solid-client`](https://github.com/inrupt/solid-client-js) and
+the revolutionary potential of Web Monetization to make it easy to monetize your React apps.
+
+This library provides a single React hook that will pull
+your [Interledger Payment Pointer](https://interledger.org/rfcs/0026-payment-pointers/) from
+your Solid WebID Profile. To configure your payment pointer you can
+use [Understory Garden](https://community.webmonetization.org/michielbdejong/web-monetization-on-solid-2bbf) or
+a [number of other](https://community.webmonetization.org/michielbdejong/web-monetization-on-solid-2bbf) Solid applications.
 
 ## how do I use it?
 
-see the examples below or [read the docs](https://swrlit.me)
+see the examples below
 
 ## install in an existing project
 
 ``` sh
-npm install swrlit
+npm install swrlit-monetize
 ```
-
-## create a new swrlit app with Next.js and Tailwind CSS
-
-``` sh
-npx create-next-app --use-npm --example https://github.com/itme/nextjs-swrlit-tailwindcss nextjs-swrlit-tailwindcss-app
-# or
-yarn create next-app --example https://github.com/itme/nextjs-swrlit-tailwindcss nextjs-swrlit-tailwindcss-app
-```
-
-
 ## examples
 
-### get data from a pod
+### monetize a page in a Next.js app
+
+Assuming you [have configured your Solid Pod Profile with a Payment Pointer](https://community.webmonetization.org/michielbdejong/web-monetization-on-solid-2bbf) you can use the `usePaymentPointer` hook to
+create a meta tag that will monetize your page:
 
 ``` typescript
-import { useThing } from "swrlit"
-import {
-  getUrlAll, getUrl, getStringNoLocale
-} from '@inrupt/solid-client'
-import { vcard, foaf } from 'rdf-namespaces'
+import { usePaymentPointer } from "swrlit-monetize"
+import Head from 'next/head'
 
-function Profile({webId}){
-  const { thing: profile } = useThing(webId)
-  const profileImage = profile && getUrl(profile, vcard.hasPhoto)
-  const name = profile && getStringNoLocale(profile, foaf.name)
+export default function Page({}){
+  const webId = "https://travis.myunderstory.com/profile/card#me"
+  const paymentPointer = usePaymentPointer(webId)
+
   return (
-  <div>
-    <h1>{name}</h1>
-    <img src={profileImage} alt={name}/>
-  </div>
+    <>
+      <Head>
+        <meta name="monetization" content={paymentPointer} />
+      </Head>
+      <p>this page is monetized for {paymentPointer}</p>
+    </>
   )
 }
 ```
 
-### create data in a pod
-
-
-``` typescript
-import { useWebId, useContainer, useProfile, useEnsured, AuthenticationProvider } from "swrlit"
-import {
-  createThing, setThing, addUrl, setStringNoLocale,
-  saveSolidDatasetInContainer, createSolidDataset
-} from '@itme/solid-client'
-import { WS } from '@inrupt/vocab-solid-common'
-
-export function useStorageContainer(webId) {
-  const { profile } = useProfile(webId)
-  return profile && getUrl(profile, WS.storage)
-}
-
-export function useTimelogContainerUri(webId, path = 'public') {
-  const storageContainer = useStorageContainer(webId)
-  return useEnsured(storageContainer && `${storageContainer}${path}/timelogs/`)
-}
-
-function TimeLogCreator(){
-  const myWebId = useWebId()
-  const timelogContainerUri = useTimelogContainerUri(myWebId, 'private')
-  const { resources: timelogs, mutate: mutateTimelogs } = useContainer(timelogContainerUri)
-
-  const createTimelog = async ({ name = "Time Tracker"}) => {
-    var log = createThing({ name: 'log' });
-    log = addUrl(log, RDF.type, TIMELOG.Log)
-    log = setStringNoLocale(log, RDFS.label, name)
-
-    var dataset = createSolidDataset()
-    dataset = setThing(dataset, log)
-
-    await saveSolidDatasetInContainer(timelogContainerUri, dataset, { slugSuggestion: name })
-    mutateTimelogs()
-  }
-
-  return (
-    <div>
-      <button onClick={createTimelog}>Create Timelog</button>
-    </div>
-  )
-}
-
-function App(){
-  return (
-    <AuthenticationProvider>
-      <TimeLogCreator/>
-    </AuthenticationProvider>
-  )
-}
-```
-
-See
-
-https://github.com/itme/swrlit-example
-
-https://github.com/itme/swrlit-timetracker
-
-for functioning examples.
