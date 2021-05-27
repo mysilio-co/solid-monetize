@@ -1,14 +1,13 @@
-# swrlit-monetize
+# solid-monetize
 
-swirl some coin in your cup
+Get paid for your Web content with Solid and Web Monetization
 
 ## what's this?
 
-`swrlit-monetize` combines the power of [`useSWR`](https://swr.vercel.app/)
-with magic of Inrupt's [~~`lit-pod`~~`solid-client`](https://github.com/inrupt/solid-client-js) and
-the revolutionary potential of Web Monetization to make it easy to monetize your React apps.
+`solid-monetize` combines Inrupt's [~~`lit-pod`~~`solid-client`](https://github.com/inrupt/solid-client-js) with
+the revolutionary potential of Web Monetization to make it easy to monetize your content.
 
-This library provides a single React hook that will pull
+This library provides a single Javascript function that will pull
 your [Interledger Payment Pointer](https://interledger.org/rfcs/0026-payment-pointers/) from
 your Solid WebID Profile. To configure your payment pointer you can
 use [Understory Garden](https://community.webmonetization.org/michielbdejong/web-monetization-on-solid-2bbf) or
@@ -21,7 +20,7 @@ see the examples below
 ## install in an existing project
 
 ``` sh
-npm install swrlit-monetize
+npm install solid-monetize
 ```
 ## examples
 
@@ -31,21 +30,11 @@ Assuming you [have configured your Solid Pod Profile with a Payment Pointer](htt
 create a meta tag that will monetize your page:
 
 ``` typescript
-import { usePaymentPointer } from "swrlit-monetize"
-import Head from 'next/head'
+import { getPaymentPointer } from "solid-monetize"
 
-export default function Page({}){
+function getMyPaymentPointer({}){
   const webId = "https://travis.myunderstory.com/profile/card#me"
-  const paymentPointer = usePaymentPointer(webId)
-
-  return (
-    <>
-      <Head>
-        <meta name="monetization" content={paymentPointer} />
-      </Head>
-      <p>this page is monetized for {paymentPointer}</p>
-    </>
-  )
+  return getPaymentPointer(webId)
 }
 ```
 
